@@ -1,3 +1,7 @@
-gid,name,notes,parent.gid,parent.name,parent.resource_type
-1183372481645203,test subtask1,This is test subtask1,1183372481645201,test task1,task
-1183372481645204,test subtask2,This is test subtask2,1183372481645201,test task1,task
+subtasks.gid,subtasks.name,subtasks.resource_type,parent.gid,parent.name,parent.resource_type
+1183372481645206,test subtask2,task,1183372481645203,test subtask1,task
+1183372481645207,test subtask3,task,1183372481645203,test subtask1,task
+1183372481645208,,task,1183372481645203,test subtask1,task
+1183372481645212,test2 subtask1,task,1183372481645204,test subtask2,task
+1183372481645213,test2 subtask2,task,1183372481645204,test subtask2,task
+1183372481645214,,task,1183372481645204,test subtask2,task

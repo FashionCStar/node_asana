@@ -32,15 +32,18 @@ module.exports = {
           return taskdetail
         })
       )
-      let subtaskDetails = taskDetails.filter(task => task.parent != null).map(subtask => {
-        return {
-          gid: subtask.gid,
-          name: subtask.name,
-          notes: subtask.notes,
-          parent: subtask.parent
-        }
-      })
-      taskDetails = taskDetails.filter(task => task.parent == null)
+      let subtaskDetails = await Promise.all(
+        tasks.data.map(async task => {
+          const taskdetail = await client.tasks.getSubtasksForTask(task.gid, {
+            opt_pretty: true
+          })
+          return {
+            subtasks: taskdetail.data,
+            parent: task
+          }
+        })
+      )
+      subtaskDetails = subtaskDetails.filter(task => task.subtasks.length > 0)
 
       let taskCSV = await converter.json2csvAsync(taskDetails, {
         expandArrayObjects: true,
