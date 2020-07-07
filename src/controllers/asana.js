@@ -26,54 +26,43 @@ module.exports = {
       let tasks = await Promise.all(
         projects.data.map(async project => {
           const tasksByProject = await client.tasks.getTasksForProject(project.gid, {
-            opt_pretty: true
+            opt_pretty: true,
+            opt_fields: "gid, name, custom_fields.name, custom_fields.number_value, notes, due_on, start_on"
           })
           return tasksByProject.data
         })
       )
       tasks = tasks.reduce((r, e) => (r.push(...e), r), [])
 
-      let taskDetails = await Promise.all(
+      let subtasks = await Promise.all(
         tasks.map(async task => {
-          const taskdetail = await client.tasks.getTask(task.gid, {
+          const subtasksByTask = await client.tasks.getSubtasksForTask(task.gid, {
+            opt_fields: "gid, name, notes, parent, due_on, start_on",
             opt_pretty: true
           })
-          return taskdetail
+          return subtasksByTask.data
         })
       )
-      let subtaskDetails = await Promise.all(
-        tasks.map(async task => {
-          const taskdetail = await client.tasks.getSubtasksForTask(task.gid, {
-            opt_pretty: true
-          })
-          return {
-            subtasks: taskdetail.data,
-            parent: task
-          }
-        })
-      )
-      subtaskDetails = subtaskDetails.filter(task => task.subtasks.length > 0)
+      subtasks = subtasks.reduce((r, e) => (r.push(...e), r), [])
 
-      let taskCSV = await converter.json2csvAsync(taskDetails, {
+      let taskCSV = await converter.json2csvAsync(tasks, {
         expandArrayObjects: true,
         unwindArrays : true
       })
-      let subtaskCSV = await converter.json2csvAsync(subtaskDetails, {
+      let subtaskCSV = await converter.json2csvAsync(subtasks, {
         expandArrayObjects: true,
         unwindArrays : true
       })
       await createCSV(taskCSV, "tasks.csv")
       await createCSV(subtaskCSV, "subtasks.csv")
       return res.status(200).json({
-        tasks: taskDetails,
-        subtasks: subtaskDetails
+        tasks: tasks,
+        subtasks: subtasks
       })
-      // return res.status(200).json({
-      //   projects: tasks
-      // })
-    } catch {
+    } catch (err) {
       return res.status(500).json({
-        result: false
+        result: false,
+        error: err
       })
     }
   }
