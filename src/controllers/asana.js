@@ -19,13 +19,22 @@ module.exports = {
       let user = await client.users.me()
       const userId = user.gid;
       const workspaceId = user.workspaces[0].gid;
-      let tasks = await client.tasks.getTasks({
-        assignee: userId,
+      let projects = await client.projects.getProjects({
         workspace: workspaceId,
         opt_pretty: true
       })
+      let tasks = await Promise.all(
+        projects.data.map(async project => {
+          const tasksByProject = await client.tasks.getTasksForProject(project.gid, {
+            opt_pretty: true
+          })
+          return tasksByProject.data
+        })
+      )
+      tasks = tasks.reduce((r, e) => (r.push(...e), r), [])
+
       let taskDetails = await Promise.all(
-        tasks.data.map(async task => {
+        tasks.map(async task => {
           const taskdetail = await client.tasks.getTask(task.gid, {
             opt_pretty: true
           })
@@ -33,7 +42,7 @@ module.exports = {
         })
       )
       let subtaskDetails = await Promise.all(
-        tasks.data.map(async task => {
+        tasks.map(async task => {
           const taskdetail = await client.tasks.getSubtasksForTask(task.gid, {
             opt_pretty: true
           })
@@ -59,6 +68,9 @@ module.exports = {
         tasks: taskDetails,
         subtasks: subtaskDetails
       })
+      // return res.status(200).json({
+      //   projects: tasks
+      // })
     } catch {
       return res.status(500).json({
         result: false
