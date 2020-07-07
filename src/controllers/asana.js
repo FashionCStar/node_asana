@@ -27,7 +27,7 @@ module.exports = {
         projects.data.map(async project => {
           const tasksByProject = await client.tasks.getTasksForProject(project.gid, {
             opt_pretty: true,
-            opt_fields: "gid, name, custom_fields.name, custom_fields.number_value, notes, due_on, start_on"
+            opt_fields: "gid, name, custom_fields.name, notes, due_on, start_on"
           })
           return tasksByProject.data
         })
@@ -59,6 +59,9 @@ module.exports = {
         tasks: tasks,
         subtasks: subtasks
       })
+      // return res.status(200).json({
+      //   projects: subtasks
+      // })
     } catch (err) {
       return res.status(500).json({
         result: false,
